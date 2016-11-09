@@ -3,35 +3,99 @@ Your code is to read in a single CSV and output a series of files that are run l
 */
 
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <iostream>
+#include <stdlib.h>
 
 using namespace std;
 
 
+/*
+CSV Parser using automata
+
+1 : preparation phase
+2 : value without quotes
+3 : value with single quote
+4 : value with double quote
+6 : after phase
+7 : final phase
+*/
+
+string int_to_string(int i) {
+  ostringstream s;
+  s << i;
+  return s.str();
+}
+
 vector<string> parse_line_to_words(string line) {
   vector<string> words;
   int i = 0;
-  bool escaped = false;
+  int state = 1;
   string word = "";
-
-  while (line[i] != '\0') {
-    if (line[i] == ',' && !escaped) {
-      escaped = false;
+  while (state != 7) {
+    if (state == 1) {
+      if (line[i] == '\'') {
+        state = 3;
+      }
+      else if (line[i] == '\"') {
+        state = 4;
+      }
+      else {
+        state = 2;
+        word += line[i];
+      }
+    }
+    else if (state == 2 || 3 || 4) {
+      if (line[i] == '\\') {
+        i++;
+        word += line[i];
+      }
+      else if (state == 3 && line[i] == '\'') {
+        state = 6;
+      }
+      else if (state == 4 && line[i] == '\"') {
+        state = 6;
+      }
+      else if (state == 2 && (line[i] == ',' || line[i] == '\0')) {
+        if (line[i] == ',') {
+          state = 1;
+        }
+        else if (line[i] == '\0') {
+          state = 7;
+        }
+        words.push_back(word);
+        word = "";
+      }
+      else if (line[i] == '\'' || line[i] == '\"') {
+        throw "Malformed CSV. You need to escape character at "+int_to_string(i);
+      }
+      else {
+        word += line[i];
+      }
+    }
+    else if (state == 5) {
+      word += line[i];
+    }
+    else if (state == 6) {
+      if (line[i] == '\0') {
+        state = 7;
+      }
+      else if (line[i] == ',') {
+        state = 1;
+      }
+      else {
+        throw "Malformed CSV";
+      }
       words.push_back(word);
-      // n_words++;
       word = "";
     }
-    else if (line[i] == '\\'){
-      escaped = true;
-    }
     else {
-      word += line[i];
+      throw "Malformed CSV";
     }
     i++;
   }
-  words.push_back(word);
   return words;
 }
 
@@ -43,18 +107,23 @@ int main(int argc, char *argv[])
 
   ifstream file(argv[1]);
   getline(file,str);
-  vector<string> attributes = parse_line_to_words(str);
-  while (getline(file, row)) {
-    words = parse_line_to_words(row);
-    // cout << words.to_s;
+  try {
+    vector<string> attributes = parse_line_to_words(str);
+    while (getline(file, row)) {
+      words = parse_line_to_words(row);
+    }
+    for (vector<string>::iterator it = attributes.begin(); it != attributes.end(); ++it) {
+      cout << *it << '\n';
+    }
+
+    for (vector<string>::iterator it = words.begin(); it != words.end(); ++it) {
+      cout << *it << '\n';
+    }
+  }
+  catch (string s) {
+    cout << s << '\n';
+    return -1;
   }
 
-  for (vector<string>::iterator it = attributes.begin(); it != attributes.end(); ++it) {
-    cout << *it << '\n';
-  }
-
-  for (vector<string>::iterator it = words.begin(); it != words.end(); ++it) {
-    cout << *it << '\n';
-  }
   return 0;
 }
