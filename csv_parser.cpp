@@ -115,7 +115,9 @@ int main(int argc, char *argv[])
 {
   string row;
   string str;
+  vector< vector<string> > output;
   vector<string> words;
+  int i = 1;
 
   ifstream file(argv[1]);
   getline(file,str);
@@ -123,6 +125,8 @@ int main(int argc, char *argv[])
     vector<string> attributes = parse_line_to_words(str);
     while (getline(file, row)) {
       words = parse_line_to_words(row);
+      output.push_back(words);
+      i++;
     }
     for (vector<string>::iterator it = attributes.begin(); it != attributes.end(); ++it) {
       cout << *it << '\n';
@@ -133,9 +137,10 @@ int main(int argc, char *argv[])
     }
   }
   catch (string s) {
+    cout << "Error at line : "+int_to_string(i) << endl;
     cout << s << '\n';
     return -1;
   }
-
+  cout << "Processed "+int_to_string(i) << endl;
   return 0;
 }
