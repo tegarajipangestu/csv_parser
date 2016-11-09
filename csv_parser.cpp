@@ -19,8 +19,8 @@ CSV Parser using automata
 2 : value without quotes
 3 : value with single quote
 4 : value with double quote
-6 : after phase
-7 : final phase
+5 : after phase
+6 : final phase
 */
 
 string int_to_string(int i) {
@@ -34,7 +34,7 @@ vector<string> parse_line_to_words(string line) {
   int i = 0;
   int state = 1;
   string word = "";
-  while (state != 7) {
+  while (state != 6) {
     if (state == 1) {
       if (line[i] == '\'') {
         state = 3;
@@ -53,17 +53,17 @@ vector<string> parse_line_to_words(string line) {
         word += line[i];
       }
       else if (state == 3 && line[i] == '\'') {
-        state = 6;
+        state = 5;
       }
       else if (state == 4 && line[i] == '\"') {
-        state = 6;
+        state = 5;
       }
       else if (state == 2 && (line[i] == ',' || line[i] == '\0')) {
         if (line[i] == ',') {
           state = 1;
         }
         else if (line[i] == '\0') {
-          state = 7;
+          state = 6;
         }
         words.push_back(word);
         word = "";
@@ -76,11 +76,8 @@ vector<string> parse_line_to_words(string line) {
       }
     }
     else if (state == 5) {
-      word += line[i];
-    }
-    else if (state == 6) {
       if (line[i] == '\0') {
-        state = 7;
+        state = 6;
       }
       else if (line[i] == ',') {
         state = 1;
