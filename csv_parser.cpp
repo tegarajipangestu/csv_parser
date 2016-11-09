@@ -50,6 +50,13 @@ vector<string> parse_line_to_words(string line) {
       else if (line[i] == '\"') {
         state = READ_WITH_DOUBLE_QUOTE;
       }
+      else if (line[i] == ',') {
+        words.push_back(word);
+        word = "";
+      }
+      else if (line[i] == '\0') {
+        state = FINAL_STATE;
+      }
       else {
         state = READ_WITHOUT_QUOTES;
         word += line[i];
