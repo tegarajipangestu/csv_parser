@@ -47,7 +47,7 @@ vector<string> parse_line_to_words(string line) {
         word += line[i];
       }
     }
-    else if (state == 2 || 3 || 4) {
+    else if (state == 2 || state == 3 || state == 4) {
       if (line[i] == '\\') {
         i++;
         word += line[i];
@@ -68,7 +68,7 @@ vector<string> parse_line_to_words(string line) {
         words.push_back(word);
         word = "";
       }
-      else if (line[i] == '\'' || line[i] == '\"') {
+      else if (state == 2 && (line[i] == '\'' || line[i] == '\"')) {
         throw "Malformed CSV. You need to escape character at "+int_to_string(i);
       }
       else {
@@ -83,13 +83,13 @@ vector<string> parse_line_to_words(string line) {
         state = 1;
       }
       else {
-        throw "Malformed CSV";
+        throw string("Malformed CSV");
       }
       words.push_back(word);
       word = "";
     }
     else {
-      throw "Malformed CSV";
+      throw string("Malformed CSV");
     }
     i++;
   }
