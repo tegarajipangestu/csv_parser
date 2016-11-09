@@ -4,18 +4,57 @@ Your code is to read in a single CSV and output a series of files that are run l
 
 #include <fstream>
 #include <string>
+#include <vector>
 #include <iostream>
 
 using namespace std;
 
+
+vector<string> parse_line_to_words(string line) {
+  vector<string> words;
+  int i = 0;
+  bool escaped = false;
+  string word = "";
+
+  while (line[i] != '\0') {
+    if (line[i] == ',' && !escaped) {
+      escaped = false;
+      words.push_back(word);
+      // n_words++;
+      word = "";
+    }
+    else if (line[i] == '\\'){
+      escaped = true;
+    }
+    else {
+      word += line[i];
+    }
+    i++;
+  }
+  words.push_back(word);
+  return words;
+}
+
 int main(int argc, char *argv[])
 {
-  ifstream file(argv[1]);
+  string row;
   string str;
+  vector<string> words;
+
+  ifstream file(argv[1]);
   getline(file,str);
-  while (getline(file, str)) {
-    cout << str << '\n';
+  vector<string> attributes = parse_line_to_words(str);
+  while (getline(file, row)) {
+    words = parse_line_to_words(row);
+    // cout << words.to_s;
   }
 
+  for (vector<string>::iterator it = attributes.begin(); it != attributes.end(); ++it) {
+    cout << *it << '\n';
+  }
+
+  for (vector<string>::iterator it = words.begin(); it != words.end(); ++it) {
+    cout << *it << '\n';
+  }
   return 0;
 }
