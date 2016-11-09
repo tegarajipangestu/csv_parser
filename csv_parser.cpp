@@ -9,6 +9,14 @@ Your code is to read in a single CSV and output a series of files that are run l
 #include <iostream>
 #include <stdlib.h>
 
+#define PREPARATION_PHASE 1
+#define READ_WITHOUT_QUOTES 2
+#define READ_WITH_SINGLE_QUOTE 3
+#define READ_WITH_DOUBLE_QUOTE 4
+#define AFTER_PHASE 5
+#define FINAL_STATE 6
+
+
 using namespace std;
 
 
@@ -32,55 +40,55 @@ string int_to_string(int i) {
 vector<string> parse_line_to_words(string line) {
   vector<string> words;
   int i = 0;
-  int state = 1;
+  int state = PREPARATION_PHASE;
   string word = "";
-  while (state != 6) {
-    if (state == 1) {
+  while (state != FINAL_STATE) {
+    if (state == PREPARATION_PHASE) {
       if (line[i] == '\'') {
-        state = 3;
+        state = READ_WITH_SINGLE_QUOTE;
       }
       else if (line[i] == '\"') {
-        state = 4;
+        state = READ_WITH_DOUBLE_QUOTE;
       }
       else {
-        state = 2;
+        state = READ_WITHOUT_QUOTES;
         word += line[i];
       }
     }
-    else if (state == 2 || state == 3 || state == 4) {
+    else if (state == READ_WITHOUT_QUOTES || state == READ_WITH_SINGLE_QUOTE || state == READ_WITH_DOUBLE_QUOTE) {
       if (line[i] == '\\') {
         i++;
         word += line[i];
       }
-      else if (state == 3 && line[i] == '\'') {
-        state = 5;
+      else if (state == READ_WITH_SINGLE_QUOTE && line[i] == '\'') {
+        state = AFTER_PHASE;
       }
-      else if (state == 4 && line[i] == '\"') {
-        state = 5;
+      else if (state == READ_WITH_DOUBLE_QUOTE && line[i] == '\"') {
+        state = AFTER_PHASE;
       }
-      else if (state == 2 && (line[i] == ',' || line[i] == '\0')) {
+      else if (state == READ_WITHOUT_QUOTES && (line[i] == ',' || line[i] == '\0')) {
         if (line[i] == ',') {
-          state = 1;
+          state = PREPARATION_PHASE;
         }
         else if (line[i] == '\0') {
-          state = 6;
+          state = FINAL_STATE;
         }
         words.push_back(word);
         word = "";
       }
-      else if (state == 2 && (line[i] == '\'' || line[i] == '\"')) {
+      else if (state == READ_WITHOUT_QUOTES && (line[i] == '\'' || line[i] == '\"')) {
         throw "Malformed CSV. You need to escape character at "+int_to_string(i);
       }
       else {
         word += line[i];
       }
     }
-    else if (state == 5) {
+    else if (state == AFTER_PHASE) {
       if (line[i] == '\0') {
-        state = 6;
+        state = FINAL_STATE;
       }
       else if (line[i] == ',') {
-        state = 1;
+        state = PREPARATION_PHASE;
       }
       else {
         throw string("Malformed CSV");
