@@ -42,7 +42,7 @@ vector<string> parse_attributes(string s) {
   std::stringstream ss;
   ss.str(s);
   string token;
-  while (std::getline(ss, token, ',')) {
+  while (getline(ss, token, ',')) {
     output.push_back(token);
   }
   return output;
