@@ -103,7 +103,8 @@ vector< vector<string> > parse_values(string line) {
           }
         }
         else if (state == READ_WITHOUT_QUOTES && (line[i] == '\'' || line[i] == '\"')) {
-          throw "Malformed CSV. You need to escape character at "+int_to_string(i);
+          cout << line[i-1] << " " << line[i] << endl;
+          throw "Malformed CSV. You need to escape character at "+int_to_string(rows.size());
         }
         else {
           word += line[i];
@@ -150,6 +151,7 @@ int main(int argc, char *argv[])
   string file_name(argv[1]);
   vector< vector<string> > contents;
   vector<string> attributes;
+  double elapsed_secs;
 
   ifstream file(argv[1]);
 
@@ -157,7 +159,10 @@ int main(int argc, char *argv[])
   try {
     vector<string> attributes = parse_attributes(str);
     str = read_from_file(file);
+    clock_t begin = clock();
     contents = parse_values(str);
+    clock_t end = clock();
+    elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 
     for (unsigned int i=0;i<attributes.size();i++) {
       ofstream output_file((file_name+"-"+attributes.at(i)+"-"+int_to_string(i)+".csv").c_str());
@@ -171,5 +176,9 @@ int main(int argc, char *argv[])
     cout << s << '\n';
     return -1;
   }
+  cout << "Processed "+int_to_string(contents.size())+" rows" << endl;
+  cout << "Time elapsed :";
+  cout << elapsed_secs;
+  cout << " s\n";
   return 0;
 }
