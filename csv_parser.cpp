@@ -37,103 +37,135 @@ string int_to_string(int i) {
   return s.str();
 }
 
-vector<string> parse_line_to_words(string line) {
-  vector<string> words;
-  int i = 0;
-  int state = PREPARATION_PHASE;
+vector<string> parse_attributes(string s) {
+  vector<string> output;
+  std::stringstream ss;
+  ss.str(s);
+  string token;
+  while (std::getline(ss, token, ',')) {
+    output.push_back(token);
+  }
+  return output;
+}
+
+vector< vector<string> > parse_values(string line) {
+  vector< vector<string> > rows;
   string word = "";
-  while (state != FINAL_STATE) {
-    if (state == PREPARATION_PHASE) {
-      if (line[i] == '\'') {
-        state = READ_WITH_SINGLE_QUOTE;
-      }
-      else if (line[i] == '\"') {
-        state = READ_WITH_DOUBLE_QUOTE;
-      }
-      else if (line[i] == ',') {
-        words.push_back(word);
-        word = "";
-      }
-      else if (line[i] == '\0') {
-        state = FINAL_STATE;
-      }
-      else {
-        state = READ_WITHOUT_QUOTES;
-        word += line[i];
-      }
-    }
-    else if (state == READ_WITHOUT_QUOTES || state == READ_WITH_SINGLE_QUOTE || state == READ_WITH_DOUBLE_QUOTE) {
-      if (line[i] == '\\') {
-        i++;
-        word += line[i];
-      }
-      else if (state == READ_WITH_SINGLE_QUOTE && line[i] == '\'') {
-        state = AFTER_PHASE;
-      }
-      else if (state == READ_WITH_DOUBLE_QUOTE && line[i] == '\"') {
-        state = AFTER_PHASE;
-      }
-      else if (state == READ_WITHOUT_QUOTES && (line[i] == ',' || line[i] == '\0')) {
-        if (line[i] == ',') {
-          state = PREPARATION_PHASE;
+
+
+  int i = 0;
+
+  while (line[i] != '\0') {
+    int state = PREPARATION_PHASE;
+    vector<string> row;
+    while (state != FINAL_STATE) {
+      if (state == PREPARATION_PHASE) {
+        if (line[i] == '\'') {
+          state = READ_WITH_SINGLE_QUOTE;
         }
-        else if (line[i] == '\0') {
+        else if (line[i] == '\"') {
+          state = READ_WITH_DOUBLE_QUOTE;
+        }
+        else if (line[i] == ',') {
+          row.push_back(word);
+          word = "";
+        }
+        else if (line[i] == '\n') {
           state = FINAL_STATE;
         }
-        words.push_back(word);
-        word = "";
+        else {
+          state = READ_WITHOUT_QUOTES;
+          word += line[i];
+        }
       }
-      else if (state == READ_WITHOUT_QUOTES && (line[i] == '\'' || line[i] == '\"')) {
-        throw "Malformed CSV. You need to escape character at "+int_to_string(i);
+      else if (state == READ_WITHOUT_QUOTES || state == READ_WITH_SINGLE_QUOTE || state == READ_WITH_DOUBLE_QUOTE) {
+        if (line[i] == '\\') {
+          i++;
+          word += line[i];
+        }
+        else if (state == READ_WITH_SINGLE_QUOTE && line[i] == '\'') {
+          state = AFTER_PHASE;
+        }
+        else if (state == READ_WITH_DOUBLE_QUOTE && line[i] == '\"') {
+          state = AFTER_PHASE;
+        }
+        else if ((state == READ_WITH_DOUBLE_QUOTE || state == READ_WITH_SINGLE_QUOTE) && line[i] == '\n') {
+          word += ' ';
+        }
+        else if (state == READ_WITHOUT_QUOTES && (line[i] == ',' || line[i] == '\n')) {
+          row.push_back(word);
+          word = "";
+          if (line[i] == ',') {
+            state = PREPARATION_PHASE;
+          }
+          else if (line[i] == '\n') {
+            state = FINAL_STATE;
+          }
+        }
+        else if (state == READ_WITHOUT_QUOTES && (line[i] == '\'' || line[i] == '\"')) {
+          throw "Malformed CSV. You need to escape character at "+int_to_string(i);
+        }
+        else {
+          word += line[i];
+        }
       }
-      else {
-        word += line[i];
-      }
-    }
-    else if (state == AFTER_PHASE) {
-      if (line[i] == '\0') {
-        state = FINAL_STATE;
-      }
-      else if (line[i] == ',') {
-        state = PREPARATION_PHASE;
+      else if (state == AFTER_PHASE) {
+        if (line[i] == '\n') {
+          row.push_back(word);
+          word = "";
+          state = FINAL_STATE;
+        }
+        else if (line[i] == ',') {
+          row.push_back(word);
+          word = "";
+          state = PREPARATION_PHASE;
+        }
+        else {
+          throw string("Malformed CSV");
+        }
       }
       else {
         throw string("Malformed CSV");
       }
-      words.push_back(word);
-      word = "";
+      i++;
     }
-    else {
-      throw string("Malformed CSV");
-    }
-    i++;
+    rows.push_back(row);
   }
-  return words;
+
+  return rows;
+}
+
+string read_from_file(ifstream & file) {
+  string output = "";
+  char c;
+  while (file.get(c)) {
+    output += c;
+  }
+  return output;
 }
 
 int main(int argc, char *argv[])
 {
-  string row;
   string str;
-  vector< vector<string> > output;
-  vector<string> words;
+  vector< vector<string> > contents;
+  vector<string> attributes;
   int i = 1;
 
   ifstream file(argv[1]);
   getline(file,str);
   try {
-    vector<string> attributes = parse_line_to_words(str);
-    while (getline(file, row)) {
-      words = parse_line_to_words(row);
-      output.push_back(words);
-      i++;
-    }
+    vector<string> attributes = parse_attributes(str);
+    str = read_from_file(file);
+    contents = parse_values(str);
+    int temp = 0;
+
     for (vector<string>::iterator it = attributes.begin(); it != attributes.end(); ++it) {
       cout << *it << '\n';
     }
-
-    for (vector<string>::iterator it = words.begin(); it != words.end(); ++it) {
-      cout << *it << '\n';
+    for (vector< vector<string> >::iterator vec_it = contents.begin() ; vec_it != contents.end() ; ++vec_it) {
+      for (vector<string>::iterator str_it = (*vec_it).begin() ; str_it != (*vec_it).end() ; ++str_it) {
+        cout << *str_it << endl;
+      }
     }
   }
   catch (string s) {
@@ -141,6 +173,5 @@ int main(int argc, char *argv[])
     cout << s << '\n';
     return -1;
   }
-  cout << "Processed "+int_to_string(i) << endl;
   return 0;
 }
