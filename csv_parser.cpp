@@ -23,12 +23,18 @@ using namespace std;
 /*
 CSV Parser using automata
 
-1 : preparation phase
-2 : value without quotes
-3 : value with single quote
-4 : value with double quote
-5 : after phase
-6 : final phase
+current state             | input | next state
+--------------------------------------
+PREPARATION_PHASE         | "     | READ_WITH_DOUBLE_QUOTE
+PREPARATION_PHASE         | '     | READ_WITH_SINGLE_QUOTE
+PREPARATION_PHASE         | ,     | READ_WITHOUT_QUOTES
+READ_WITH_SINGLE_QUOTE    | '     | AFTER_PHASE
+READ_WITH_DOUBLE_QUOTE    | "     | AFTER_PHASE
+READ_WITHOUT_QUOTES       | ,     | PREPARATION_PHASE
+READ_WITH_DOUBLE_QUOTE    | .     | READ_WITH_DOUBLE_QUOTE
+READ_WITH_SINGLE_QUOTE    | .     | READ_WITH_SINGLE_QUOTE
+READ_WITHOUT_QUOTES       | .     | READ_WITHOUT_QUOTES
+AFTER_PHASE               | ,     | PREPARATION_PHASE
 */
 
 string int_to_string(int i) {
