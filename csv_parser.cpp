@@ -166,10 +166,23 @@ int main(int argc, char *argv[])
 
     for (unsigned int i=0;i<attributes.size();i++) {
       ofstream output_file((file_name+"-"+attributes.at(i)+"-"+int_to_string(i)+".csv").c_str());
-      for (vector< vector<string> >::iterator vec_it = contents.begin() ; vec_it != contents.end() ; ++vec_it) {
+      int counter = 1;
+      for (unsigned int j = 0 ; j<contents.size()-1 ; j++) {
+        string current_value = contents[j][i];
+        string next_value = contents[j+1][i];
 
-        output_file << (*vec_it).at(i) << endl;
+        if (current_value == next_value) {
+          counter++;
+        }
+        else {
+          output_file << contents[j][i] +","+ int_to_string(counter) << endl;
+          counter = 1;
+        }
       }
+      if (contents[contents.size()][i] != contents[contents.size()-1][i]) {
+        counter = 1;
+      }
+      output_file << contents[contents.size()][i] +","+ int_to_string(counter) << endl;
       output_file.close();
     }
   }
