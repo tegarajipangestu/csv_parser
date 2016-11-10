@@ -167,6 +167,7 @@ int main(int argc, char *argv[])
     for (unsigned int i=0;i<attributes.size();i++) {
       ofstream output_file((file_name+"-"+attributes.at(i)+"-"+int_to_string(i)+".csv").c_str());
       for (vector< vector<string> >::iterator vec_it = contents.begin() ; vec_it != contents.end() ; ++vec_it) {
+
         output_file << (*vec_it).at(i) << endl;
       }
       output_file.close();
