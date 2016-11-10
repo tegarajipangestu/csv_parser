@@ -147,29 +147,27 @@ string read_from_file(ifstream & file) {
 int main(int argc, char *argv[])
 {
   string str;
+  string file_name(argv[1]);
   vector< vector<string> > contents;
   vector<string> attributes;
-  int i = 1;
 
   ifstream file(argv[1]);
+
   getline(file,str);
   try {
     vector<string> attributes = parse_attributes(str);
     str = read_from_file(file);
     contents = parse_values(str);
-    int temp = 0;
 
-    for (vector<string>::iterator it = attributes.begin(); it != attributes.end(); ++it) {
-      cout << *it << '\n';
-    }
-    for (vector< vector<string> >::iterator vec_it = contents.begin() ; vec_it != contents.end() ; ++vec_it) {
-      for (vector<string>::iterator str_it = (*vec_it).begin() ; str_it != (*vec_it).end() ; ++str_it) {
-        cout << *str_it << endl;
+    for (int i=0;i<attributes.size();i++) {
+      ofstream output_file((file_name+"-"+attributes.at(i)+"-"+int_to_string(i)+".csv").c_str());
+      for (vector< vector<string> >::iterator vec_it = contents.begin() ; vec_it != contents.end() ; ++vec_it) {
+        output_file << (*vec_it).at(i) << endl;
       }
+      output_file.close();
     }
   }
   catch (string s) {
-    cout << "Error at line : "+int_to_string(i) << endl;
     cout << s << '\n';
     return -1;
   }
