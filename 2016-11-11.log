@@ -1,3 +1,6 @@
+Running program at ./1.csv
+Processed 20 rows
+Time elapsed :0.000828 s
 Running program at ./2.csv
 Processed 20 rows
-Time elapsed :0.00014 s
+Time elapsed :0.00062 s

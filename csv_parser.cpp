@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
   }
 
   ofstream log;
-  log.open((get_current_date_time()+".log").c_str());
+  log.open((get_current_date_time()+".log").c_str(),std::ios_base::app);
   log << "Running program at "+file_name << endl;
   log << "Processed "+int_to_string(contents.size())+" rows" << endl;
   log << "Time elapsed :";
