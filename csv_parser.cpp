@@ -182,10 +182,9 @@ int main(int argc, char *argv[])
 
   ifstream file(argv[1]);
 
-  getline(file,str);
   try {
+    getline(file,str);
     vector<string> attributes = parse_attributes(str);
-
     str = read_from_file(file);
     clock_t begin = clock();
     contents = parse_values(str);
@@ -219,7 +218,8 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  ofstream log ((get_current_date_time()+".log").c_str());
+  ofstream log;
+  log.open((get_current_date_time()+".log").c_str());
   log << "Running program at "+file_name << endl;
   log << "Processed "+int_to_string(contents.size())+" rows" << endl;
   log << "Time elapsed :";
