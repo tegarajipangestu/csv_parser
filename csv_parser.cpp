@@ -14,6 +14,8 @@ file will vary with the level of repetition.
 #include <vector>
 #include <iostream>
 #include <stdlib.h>
+#include <time.h>
+#include <algorithm>
 
 #define PREPARATION_PHASE 1
 #define READ_WITHOUT_QUOTES 2
@@ -43,6 +45,17 @@ READ_WITHOUT_QUOTES       | .     | READ_WITHOUT_QUOTES
 AFTER_PHASE               | ,     | PREPARATION_PHASE
 */
 
+// Get current date/time, format is YYYY-MM-DD.HH:mm:ss
+
+string get_current_date_time() {
+    time_t t = time(0);
+    struct tm * now = localtime(&t);
+    ostringstream result;
+
+    result << (now->tm_year + 1900) << '-' << (now->tm_mon+1) << '-' << (now->tm_mday);
+    return result.str();
+}
+
 string int_to_string(int i) {
   ostringstream s;
   s << i;
@@ -55,6 +68,7 @@ vector<string> parse_attributes(string s) {
   ss.str(s);
   string token;
   while (getline(ss, token, ',')) {
+    token.erase(remove(token.begin(), token.end(), '\r'), token.end());
     output.push_back(token);
   }
   return output;
@@ -105,6 +119,7 @@ vector< vector<string> > parse_values(string line) {
           word += ' ';
         }
         else if (state == READ_WITHOUT_QUOTES && (line[i] == ',' || line[i] == '\n')) {
+          word.erase(remove(word.begin(), word.end(), '\r'), word.end());
           row.push_back(word);
           word = "";
           if (line[i] == ',') {
@@ -170,6 +185,7 @@ int main(int argc, char *argv[])
   getline(file,str);
   try {
     vector<string> attributes = parse_attributes(str);
+
     str = read_from_file(file);
     clock_t begin = clock();
     contents = parse_values(str);
@@ -202,9 +218,12 @@ int main(int argc, char *argv[])
     cout << s << '\n';
     return -1;
   }
-  cout << "Processed "+int_to_string(contents.size())+" rows" << endl;
-  cout << "Time elapsed :";
-  cout << elapsed_secs;
-  cout << " s\n";
+
+  ofstream log ((get_current_date_time()+".log").c_str());
+  log << "Running program at "+file_name << endl;
+  log << "Processed "+int_to_string(contents.size())+" rows" << endl;
+  log << "Time elapsed :";
+  log << elapsed_secs;
+  log << " s" << endl;
   return 0;
 }
